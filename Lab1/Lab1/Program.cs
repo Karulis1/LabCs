@@ -53,8 +53,8 @@ namespace GeneticSearch
             using (var writer = new StreamWriter(outputFile))
             {
                 writer.WriteLine("Ivan");
-                writer.WriteLine("Генетический поиск");
-                writer.WriteLine();
+                writer.WriteLine("Genetic search");
+                writer.WriteLine(new string('-', 50));
 
                 string[] commands = File.ReadAllLines(commandsFile);
                 for (int i = 0; i < commands.Length; i++)
@@ -64,7 +64,7 @@ namespace GeneticSearch
                     string[] parts = commands[i].Split('\t');
                     if (parts.Length == 0) continue;
 
-                    writer.WriteLine($"{(i + 1):D3}");
+                    writer.Write($"{(i + 1):D3} ");
 
                     switch (parts[0].ToLower())
                     {
@@ -113,7 +113,7 @@ namespace GeneticSearch
         static void Diff(List<GeneticData> data, string protein1, string protein2, TextWriter output)
         {
             output.WriteLine($"diff\t{protein1}\t{protein2}");
-            output.Write("amino-acids difference: ");
+            output.WriteLine("amino-acids difference: ");
 
             GeneticData p1 = FindProtein(data, protein1);
             GeneticData p2 = FindProtein(data, protein2);
@@ -139,7 +139,7 @@ namespace GeneticSearch
         static void Mode(List<GeneticData> data, string protein, TextWriter output)
         {
             output.WriteLine($"mode\t{protein}");
-            output.Write("amino-acid occurs: ");
+            output.WriteLine("amino-acid occurs: ");
 
             GeneticData p = FindProtein(data, protein);
             if (p.protein == null)

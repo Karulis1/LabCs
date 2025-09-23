@@ -53,8 +53,8 @@ namespace GeneticSearch
             using (var writer = new StreamWriter(outputFile))
             {
                 writer.WriteLine("Ivan");
-                writer.WriteLine("Genetic search");
-                writer.WriteLine(new string('-', 50));
+                writer.WriteLine("Genetic Searching");
+                writer.WriteLine(new string('-', 80));
 
                 string[] commands = File.ReadAllLines(commandsFile);
                 for (int i = 0; i < commands.Length; i++)
@@ -64,13 +64,16 @@ namespace GeneticSearch
                     string[] parts = commands[i].Split('\t');
                     if (parts.Length == 0) continue;
 
-                    writer.Write($"{(i + 1):D3} ");
+                    writer.Write($"{(i + 1):D3}" + '\t');
 
                     switch (parts[0].ToLower())
                     {
                         case "search":
                             if (parts.Length >= 2)
-                                Search(data, RLDecoding(parts[1].Trim()), writer);
+                            {
+                                string sequence = parts[1].Trim();
+                                Search(data, sequence, writer);
+                            }
                             break;
                         case "diff":
                             if (parts.Length >= 3)
@@ -81,7 +84,7 @@ namespace GeneticSearch
                                 Mode(data, parts[1].Trim(), writer);
                             break;
                     }
-                    writer.WriteLine(new string('-', 50));
+                    writer.WriteLine(new string('-', 80));
                 }
             }
         }
@@ -97,11 +100,13 @@ namespace GeneticSearch
 
         static void Search(List<GeneticData> data, string sequence, TextWriter output)
         {
-            output.WriteLine($"search\t{RLEncoding(sequence)}");
+            string decodedSequence = RLDecoding(sequence);
+            output.WriteLine($"search"+'\t'+ '\t'+ RLEncoding(decodedSequence));
+            output.WriteLine($"organism" + '\t' + '\t' + "protein");
             bool found = false;
             foreach (var item in data)
             {
-                if (item.amino_acids.Contains(sequence))
+                if (item.amino_acids.Contains(decodedSequence))
                 {
                     output.WriteLine($"{item.organism}\t{item.protein}");
                     found = true;
@@ -112,7 +117,7 @@ namespace GeneticSearch
 
         static void Diff(List<GeneticData> data, string protein1, string protein2, TextWriter output)
         {
-            output.WriteLine($"diff\t{protein1}\t{protein2}");
+            output.WriteLine("diff"+'\t'+(protein1)+'\t'+(protein2));
             output.WriteLine("amino-acids difference: ");
 
             GeneticData p1 = FindProtein(data, protein1);
@@ -165,7 +170,7 @@ namespace GeneticSearch
                 }
             }
 
-            output.WriteLine($"{mostCommon} {maxCount}");
+            output.WriteLine($"{mostCommon}"+'\t'+(maxCount));
         }
 
         static GeneticData FindProtein(List<GeneticData> data, string proteinName)

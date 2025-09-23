@@ -147,7 +147,7 @@ class Program
         else
         {
             Console.WriteLine("1. сложение невозможно");
-            Console.WriteLine($"   ({m1.Rows}x{m1.Columns}) ≠ ({m2.Rows}x{m2.Columns})");
+            Console.WriteLine($"   ({m1.Rows}x{m1.Columns}) не равно ({m2.Rows}x{m2.Columns})");
             Console.WriteLine();
         }
 
@@ -155,7 +155,7 @@ class Program
         {
             Matrix product = Matrix.Multiply(m1, m2);
             Console.WriteLine("2. умножение матриц:");
-            Console.WriteLine($"   ({m1.Rows}x{m1.Columns}) × ({m2.Rows}x{m2.Columns}) = ({m1.Rows}x{m2.Columns})");
+            Console.WriteLine($"   ({m1.Rows}x{m1.Columns}) * ({m2.Rows}x{m2.Columns}) = ({m1.Rows}x{m2.Columns})");
             product.Print();
         }
         else
@@ -166,11 +166,11 @@ class Program
 
         Console.WriteLine("3. умножение на число:");
 
-        Console.WriteLine("Матрица 1 × 3:");
+        Console.WriteLine("Матрица 1 * 3:");
         Matrix scaled1 = Matrix.Multiply(m1, 3);
         scaled1.Print();
 
-        Console.WriteLine("Матрица 2 × 3:");
+        Console.WriteLine("Матрица 2 * 3:");
         Matrix scaled2 = Matrix.Multiply(m2, 3);
         scaled2.Print();
 
@@ -178,12 +178,12 @@ class Program
 
         Matrix transposed1 = m1.Transponir();
         Console.WriteLine("Транспонированная матрица 1:");
-        Console.WriteLine($"   ({m1.Rows}x{m1.Columns}) → ({transposed1.Rows}x{transposed1.Columns})");
+        Console.WriteLine($"   ({m1.Rows}x{m1.Columns}) - ({transposed1.Rows}x{transposed1.Columns})");
         transposed1.Print();
 
         Matrix transposed2 = m2.Transponir();
         Console.WriteLine("Транспонированная матрица 2:");
-        Console.WriteLine($"   ({m2.Rows}x{m2.Columns}) → ({transposed2.Rows}x{transposed2.Columns})");
+        Console.WriteLine($"   ({m2.Rows}x{m2.Columns}) - ({transposed2.Rows}x{transposed2.Columns})");
         transposed2.Print();
 
     }

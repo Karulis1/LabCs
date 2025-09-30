@@ -2,8 +2,9 @@
 
 namespace GeneticSearch
 {
-    class Program
+    public static class Program
     {
+        public static int count2 = 0;
         struct GeneticData
         {
             public string protein;
@@ -15,8 +16,8 @@ namespace GeneticSearch
         {
             try
             {
-                List<GeneticData> data = ReadGeneticData("sequences.txt");
-                ProcessCommands("commands.txt", data, "genedata.txt");
+                List<GeneticData> data = ReadGeneticData("C:\\Users\\voidt\\source\\repos\\LAbCSh\\LabCSh\\Lab1\\Lab1\\file\\sequences.txt");
+                ProcessCommands("C:\\Users\\voidt\\source\\repos\\LAbCSh\\LabCSh\\Lab1\\Lab1\\file\\commands.txt", data, "C:\\Users\\voidt\\source\\repos\\LAbCSh\\LabCSh\\Lab1\\Lab1\\file\\Gendata.txt");
                 Console.WriteLine("Готово! Результат в genedata.txt");
             }
             catch (Exception ex)
@@ -65,7 +66,6 @@ namespace GeneticSearch
                     if (parts.Length == 0) continue;
 
                     writer.Write($"{(i + 1):D3}" + '\t');
-
                     switch (parts[0].ToLower())
                     {
                         case "search":
@@ -86,6 +86,7 @@ namespace GeneticSearch
                     }
                     writer.WriteLine(new string('-', 80));
                 }
+                writer.WriteLine($"lines added: {count2}");
             }
         }
 
@@ -101,8 +102,9 @@ namespace GeneticSearch
         static void Search(List<GeneticData> data, string sequence, TextWriter output)
         {
             string decodedSequence = RLDecoding(sequence);
-            output.WriteLine($"search"+'\t'+ '\t'+ RLEncoding(decodedSequence));
+            output.WriteLine($"search" + '\t' + '\t' + RLEncoding(decodedSequence));
             output.WriteLine($"organism" + '\t' + '\t' + "protein");
+            count2 +=2;
             bool found = false;
             foreach (var item in data)
             {
@@ -110,16 +112,20 @@ namespace GeneticSearch
                 {
                     output.WriteLine($"{item.organism}\t{item.protein}");
                     found = true;
+                    count2++;
                 }
             }
-            if (!found) output.WriteLine("NOT FOUND");
+            if (!found) {
+                output.WriteLine("NOT FOUND");
+            count2++;
+            }
         }
 
         static void Diff(List<GeneticData> data, string protein1, string protein2, TextWriter output)
         {
-            output.WriteLine("diff"+'\t'+(protein1)+'\t'+(protein2));
+            output.WriteLine("diff" + '\t' + (protein1) + '\t' + (protein2));
             output.WriteLine("amino-acids difference: ");
-
+            count2 += 2;
             GeneticData p1 = FindProtein(data, protein1);
             GeneticData p2 = FindProtein(data, protein2);
 
@@ -129,6 +135,7 @@ namespace GeneticSearch
                 if (p1.protein == null) missing += protein1;
                 if (p2.protein == null) missing += (missing != "" ? ", " : "") + protein2;
                 output.WriteLine($"MISSING: {missing}");
+                count2++;
                 return;
             }
 
@@ -139,17 +146,19 @@ namespace GeneticSearch
 
             diff += Math.Abs(p1.amino_acids.Length - p2.amino_acids.Length);
             output.WriteLine(diff);
+            count2++;
         }
 
         static void Mode(List<GeneticData> data, string protein, TextWriter output)
         {
             output.WriteLine($"mode\t{protein}");
             output.WriteLine("amino-acid occurs: ");
-
+            count2 += 2;
             GeneticData p = FindProtein(data, protein);
             if (p.protein == null)
             {
                 output.WriteLine($"MISSING: {protein}");
+                count2++;
                 return;
             }
 
@@ -170,7 +179,8 @@ namespace GeneticSearch
                 }
             }
 
-            output.WriteLine($"{mostCommon}"+'\t'+(maxCount));
+            output.WriteLine($"{mostCommon}" + '\t' + (maxCount));
+            count2++;
         }
 
         static GeneticData FindProtein(List<GeneticData> data, string proteinName)

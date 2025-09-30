@@ -13,10 +13,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="commands.txt">
+    <Content Include="file\commands.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="sequences.txt">
+    <Content Include="file\sequences.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

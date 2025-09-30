@@ -25,7 +25,7 @@
         {
             for (int j = 0; j < Columns; j++)
             {
-                Console.Write($"Элемент [{i},{j}]: ");
+                Console.Write($"Элементtt[{i},{j}]: ");
                 data[i, j] = int.Parse(Console.ReadLine());
             }
         }

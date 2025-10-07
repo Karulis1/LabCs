@@ -1,89 +1,265 @@
 ﻿namespace CatAndMouse
 {
+    public enum State
+    {
+        Winner,
+        Loser,
+        Playing,
+        NotInGame
+    }
+    public enum GameState
+    {
+        Start,
+        End
+    }
+    public class Player
+    {
+        public string name;
+        public int location;
+        public State state;
+        public int distanceTraveled;
+
+        public Player(string name)
+        {
+            this.name = name;
+            this.location = -1;
+            this.state = State.NotInGame;
+            this.distanceTraveled = 0;
+        }
+
+        public void Move(int steps, int fieldSize)
+        {
+            if (state == State.NotInGame)
+            {
+                location = steps;
+                state = State.Playing;
+            }
+            else if (state == State.Playing)
+            {
+                int oldLocation = location;
+                int newLocation = location + steps;
+
+                while (newLocation < 1) newLocation += fieldSize;
+                while (newLocation > fieldSize) newLocation -= fieldSize;
+
+                location = newLocation;
+                distanceTraveled += Math.Abs(steps);
+            }
+        }
+    }
+
+    public class Game
+    {
+        public int size;
+        public Player cat;
+        public Player mouse;
+        public GameState state;
+        private List<string> outputLines;
+        private List<string> inputCommands;
+        private int currentCommandIndex;
+
+        public static string InputFile = "ChaseData.txt";
+        public static string OutputFile = "PursuitLog.txt";
+
+        public Game(int size)
+        {
+            this.size = size;
+            cat = new Player("Cat");
+            mouse = new Player("Mouse");
+            state = GameState.Start;
+            outputLines = new List<string>();
+            inputCommands = new List<string>();
+            currentCommandIndex = 0;
+        }
+
+        public void LoadInputFile()
+        {
+            try
+            {
+                if (File.Exists(InputFile))
+                {
+                    inputCommands = new List<string>(File.ReadAllLines(InputFile));
+                    inputCommands.RemoveAll(string.IsNullOrWhiteSpace);
+                }
+                else
+                {
+                    throw new FileNotFoundException($"{InputFile} not found");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR: {ex.Message}");
+            }
+        }
+
+        public void Run()
+        {
+            LoadInputFile();
+
+            if (inputCommands.Count == 0)
+            {
+                Console.WriteLine("No commands");
+                return;
+            }
+
+            if (!int.TryParse(inputCommands[0], out int fileSize))
+            {
+                Console.WriteLine("ERROR: field size");
+                return;
+            }
+
+            size = fileSize;
+            currentCommandIndex = 1;
+
+            InitializeOutput();
+
+            while (state != GameState.End && currentCommandIndex < inputCommands.Count)
+            {
+                string commandLine = inputCommands[currentCommandIndex].Trim();
+                currentCommandIndex++;
+
+                if (string.IsNullOrEmpty(commandLine))
+                    continue;
+
+                string[] parts = commandLine.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+                if (parts.Length == 0)
+                    continue;
+
+                char commandType = parts[0][0];
+
+                switch (commandType)
+                {
+                    case 'M':
+                    case 'C':
+                        if (parts.Length >= 2 && int.TryParse(parts[1], out int steps))
+                        {
+                            DoMoveCommand(commandType, steps);
+                            CheckGameEnd();
+                        }
+                        break;
+                    case 'P':
+                        DoPrintCommand();
+                        break;
+                }
+
+                if (state == GameState.End)
+                    break;
+            }
+
+            FinalOutput();
+            SaveOutputFile();
+        }
+
+        private void InitializeOutput()
+        {
+            outputLines.Clear();
+            outputLines.Add("Cat and Mouse");
+            outputLines.Add("");
+            outputLines.Add("Cat Mouse Distance");
+            outputLines.Add("___________________");
+        }
+
+        private void DoMoveCommand(char command, int steps)
+        {
+            switch (command)
+            {
+                case 'M':
+                    mouse.Move(steps, size);
+                    break;
+                case 'C':
+                    cat.Move(steps, size);
+                    break;
+            }
+        }
+
+        private void DoPrintCommand()
+        {
+            string catPos = (cat.state == State.NotInGame) ? "??" : cat.location.ToString();
+            string mousePos = (mouse.state == State.NotInGame) ? "??" : mouse.location.ToString();
+            string distance = "??";
+
+            if (cat.state != State.NotInGame && mouse.state != State.NotInGame)
+            {
+                int dist = Math.Abs(cat.location - mouse.location);
+                distance = dist.ToString();
+            }
+
+            outputLines.Add($"{catPos} {mousePos} {distance}");
+        }
+
+        private void CheckGameEnd()
+        {
+            if (cat.state == State.Playing && mouse.state == State.Playing &&
+                cat.location == mouse.location)
+            {
+                state = GameState.End;
+                DoPrintCommand();
+            }
+        }
+
+        private void FinalOutput()
+        {
+            outputLines.Add("___________________");
+            outputLines.Add("");
+            outputLines.Add("");
+            outputLines.Add($"Distance traveled: Mouse {mouse.distanceTraveled} Cat {cat.distanceTraveled}");
+            outputLines.Add("");
+
+            if (state == GameState.End && cat.location == mouse.location)
+            {
+                outputLines.Add($"Mouse caught at: {cat.location}");
+            }
+            else
+            {
+                outputLines.Add("Mouse evaded Cat");
+            }
+        }
+
+        private void SaveOutputFile()
+        {
+            try
+            {
+                File.WriteAllLines(OutputFile, outputLines);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"save file error: {ex.Message}");
+            }
+        }
+
+        public void PrintConsole()
+        {
+            foreach (string line in outputLines)
+            {
+                Console.WriteLine(line);
+            }
+        }
+    }
+
     class Program
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("=== Игра Кот и Мышь ===\n");
-
-            Console.Write("Введите размер поля: ");
-            int fieldSize = int.Parse(Console.ReadLine());
-            Console.WriteLine();
-
-            int catPos = 1;
-            int mousePos = fieldSize;
-
-            while (true)
+            Game.InputFile = "ChaseData.txt";
+            Game.OutputFile = "PursuitLog.txt";
+            try
             {
-                ShowField(fieldSize);
-                Visualize(fieldSize, catPos, mousePos);
-
-                Console.Write("Введите шаги для кота: ");
-                string catInput = Console.ReadLine().Trim();
-
-                Console.Write("Введите шаги для мыши: ");
-                string mouseInput = Console.ReadLine().Trim();
-
-                if (catInput == "EXIT" || mouseInput == "EXIT") break;
-
-                if (int.TryParse(catInput, out int catSteps) &&
-                    int.TryParse(mouseInput, out int mouseSteps))
+                string[] lines = File.ReadAllLines(Game.InputFile);
+                if (lines.Length == 0 || !int.TryParse(lines[0], out int fieldSize))
                 {
-                    int newCatPos = Move(catPos, catSteps, fieldSize);
-                    int newMousePos = Move(mousePos, mouseSteps, fieldSize);
-
-                    catPos = newCatPos;
-                    mousePos = newMousePos;
-
-                    if (catPos == mousePos)
-                    {
-                        ShowField(fieldSize);
-                        Visualize(fieldSize, catPos, mousePos);
-                        Console.WriteLine($"*** МЫШЬ ПОЙМАНА в клетке {catPos}! ***");
-                        break;
-                    }
-
-                    Console.WriteLine($"Расстояние: {Math.Abs(catPos - mousePos)} клеток\n");
+                    Console.WriteLine("ERROR");
+                    return;
                 }
-                else
-                {
-                    Console.WriteLine("Ошибка! Введите целые числа.\n");
-                }
+                Game game = new Game(fieldSize);
+                game.Run();
+                game.PrintConsole();
             }
-        }
-
-        static int Move(int position, int steps, int fieldSize)
-        {
-            int newPos = position + steps;
-            while (newPos < 1) newPos += fieldSize;
-            while (newPos > fieldSize) newPos -= fieldSize;
-            return newPos;
-        }
-
-        static void ShowField(int fieldSize)
-        {
-            Console.WriteLine("Поле:");
-            for (int i = 1; i <= fieldSize; i++)
+            catch (Exception ex)
             {
-                Console.Write($"{i,2} ");
+                Console.WriteLine($"ERROR: {ex.Message}");
             }
-            Console.WriteLine();
-        }
-
-        static void Visualize(int fieldSize, int catPos, int mousePos)
-        {
-            for (int i = 1; i <= fieldSize; i++)
-            {
-                if (i == catPos && i == mousePos)
-                    Console.Write("КМ ");
-                else if (i == catPos)
-                    Console.Write("К  ");
-                else if (i == mousePos)
-                    Console.Write("М  ");
-                else
-                    Console.Write(".  ");
-            }
-            Console.WriteLine("\n");
-        }
+            Console.ReadKey();
+        }   
     }
 }

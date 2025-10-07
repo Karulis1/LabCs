@@ -19,7 +19,12 @@ public class Player
         this.state = State.NotInGame;
         this.distanceTraveled = 0;
     }
-
+    public Player(string name, int location)
+    {
+        this.name = name;
+        this.location = location;
+        
+    }
     public void Move(int steps, int fieldSize)
     {
         if (state == State.NotInGame)
@@ -38,5 +43,9 @@ public class Player
             location = newLocation;
             distanceTraveled += Math.Abs(steps);
         }
+    }
+    public string toString (Player obj1)
+    {
+        return $"Name = {obj1.name}, Location = {obj1.location}";
     }
 }

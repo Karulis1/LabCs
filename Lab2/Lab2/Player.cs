@@ -44,7 +44,7 @@ public class Player
             distanceTraveled += Math.Abs(steps);
         }
     }
-    public string toString (Player obj1)
+    public string toString (Player obj1)    
     {
         return $"Name = {obj1.name}, Location = {obj1.location}";
     }

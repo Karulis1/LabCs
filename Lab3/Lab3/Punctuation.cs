@@ -1,9 +1,6 @@
-﻿public class Punctuation
+﻿public class Punctuation : Token
 {
-    public string Value { get; set; }
-
-    public Punctuation(string value)
+    public Punctuation(string value) : base(value)
     {
-        Value = value;
     }
 }

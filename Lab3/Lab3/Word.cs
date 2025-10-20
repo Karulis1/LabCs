@@ -1,9 +1,6 @@
-﻿public class Word
+﻿public class Word : Token
 {
-    public string Value { get; set; }
-
-    public Word(string value)
+    public Word(string value) : base(value)
     {
-        Value = value;
     }
-}   
+}

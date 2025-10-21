@@ -1,4 +1,7 @@
-﻿public class Text
+﻿using System.Text;
+using System.Xml.Serialization;
+
+public class Text
 {
     public List<Sentence> Sentences { get; set; } = new List<Sentence>();
 
@@ -120,6 +123,31 @@
                     sentence.Tokens.RemoveAt(i);
                 }
             }
+        }
+    }
+    public void ExportToXml(string filePath)
+    {
+        try
+        {
+            XmlSerializer serializer = new XmlSerializer(typeof(Text));
+
+            var settings = new System.Xml.XmlWriterSettings
+            {
+                Indent = true,
+                IndentChars = "  ",
+                Encoding = Encoding.UTF8
+            };
+
+            using (var writer = System.Xml.XmlWriter.Create(filePath, settings))
+            {
+                serializer.Serialize(writer, this);
+            }
+
+            Console.WriteLine($"Текст успешно экспортирован в XML файл: {filePath}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при экспорте в XML: {ex.Message}");
         }
     }
 }

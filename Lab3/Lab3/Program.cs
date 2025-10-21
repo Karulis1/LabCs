@@ -1,4 +1,7 @@
-﻿class Program
+﻿using System.Text;
+using System.Xml.Serialization;
+
+class Program
 {
 private static Text text;
 private static HashSet<string> stopWords;
@@ -35,6 +38,7 @@ public static void ShowMenu()
         Console.WriteLine("5. Заменить слова в предложении");
         Console.WriteLine("6. Удалить стоп-слова");
         Console.WriteLine("7. Показать весь текст");
+        Console.WriteLine("8. Экспорт в Xml");
         Console.WriteLine("0. Выход");
         Console.Write("Выберите действие: ");
 
@@ -62,6 +66,9 @@ public static void ShowMenu()
                 break;
             case "7":
                 ShowAllText();
+                break;
+            case "8":
+                ExportToXml();
                 break;
             case "0":
                 return;
@@ -178,4 +185,16 @@ public static void ShowAllText()
         Console.WriteLine($"{text.Sentences[i]}");
     }
 }
+    public static void ExportToXml()
+    {
+        Console.Write("Введите имя XML файла (по умолчанию output.xml): ");
+        string fileName = Console.ReadLine();
+
+        if (string.IsNullOrEmpty(fileName))
+        {
+            fileName = "output.xml";
+        }
+
+        text.ExportToXml(fileName);
+    }
 }

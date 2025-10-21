@@ -3,4 +3,7 @@
     public Punctuation(string value) : base(value)
     {
     }
+    public Punctuation() : base("")
+    {
+    }
 }

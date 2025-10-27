@@ -1,7 +1,10 @@
 ﻿using System.Text;
-
+using System.Xml.Serialization;
+[XmlRoot("Sentence")]
 public class Sentence
 {
+    [XmlElement("Word", Type = typeof(Word))]
+    [XmlElement("Punctuation", Type = typeof(Punctuation))]
     public List<Token> Tokens { get; set; } = new List<Token>();
 
     public int Length

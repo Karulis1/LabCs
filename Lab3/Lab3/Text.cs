@@ -1,8 +1,9 @@
 ﻿using System.Text;
 using System.Xml.Serialization;
-
+[XmlRoot("Text")]
 public class Text
 {
+    [XmlElement("Sentence")]
     public List<Sentence> Sentences { get; set; } = new List<Sentence>();
 
     public void AddSentence(Sentence sentence)

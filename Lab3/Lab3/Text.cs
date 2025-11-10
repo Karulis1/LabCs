@@ -153,7 +153,7 @@ public class Text
     }
     public void BuildConcordance()
     {
-        var wordStats = new Dictionary<string, (int count, SortedSet<int> lines)>();
+        var wordStats = new Dictionary<string, WordStat>();
 
         for (int i = 0; i < Sentences.Count; i++)
         {
@@ -166,12 +166,16 @@ public class Text
                     string wordText = word.Value.ToLower();
 
                     if (!wordStats.ContainsKey(wordText))
-                        wordStats[wordText] = (0, new SortedSet<int>());
+                    {
+                        wordStats[wordText] = new WordStat();
+                    }
 
-                    wordStats[wordText] = (wordStats[wordText].count + 1, wordStats[wordText].lines);
+                    wordStats[wordText].Count++;
 
                     if (lineWords.Add(wordText))
-                        wordStats[wordText].lines.Add(i + 1);
+                    {
+                        wordStats[wordText].Lines.Add(i + 1);
+                    }
                 }
             }
         }
@@ -182,7 +186,7 @@ public class Text
         foreach (string word in sortedWords)
         {
             var stats = wordStats[word];
-            Console.WriteLine($"{word.PadRight(20, '.')}{stats.count}: {string.Join(" ", stats.lines)}");
+            Console.WriteLine($"{word.PadRight(20, '.')}{stats.Count}: {string.Join(" ", stats.Lines)}");
         }
     }
 }

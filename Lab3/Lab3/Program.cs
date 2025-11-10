@@ -39,6 +39,7 @@ public static void ShowMenu()
         Console.WriteLine("6. Удалить стоп-слова");
         Console.WriteLine("7. Показать весь текст");
         Console.WriteLine("8. Экспорт в Xml");
+        Console.WriteLine("9. Построить конкорданс");
         Console.WriteLine("0. Выход");
         Console.Write("Выберите действие: ");
 
@@ -70,7 +71,10 @@ public static void ShowMenu()
             case "8":
                 ExportToXml();
                 break;
-            case "0":
+            case "9":
+                BuildConcordance();
+                break;
+                case "0":
                 return;
             default:
                 Console.WriteLine("Неверный выбор!");
@@ -196,5 +200,9 @@ public static void ShowAllText()
         }
 
         text.ExportToXml(fileName);
+    }
+    public static void BuildConcordance()
+    {
+        text.BuildConcordance();
     }
 }

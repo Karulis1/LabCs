@@ -151,4 +151,38 @@ public class Text
             Console.WriteLine($"Ошибка при экспорте в XML: {ex.Message}");
         }
     }
+    public void BuildConcordance()
+    {
+        var wordStats = new Dictionary<string, (int count, SortedSet<int> lines)>();
+
+        for (int i = 0; i < Sentences.Count; i++)
+        {
+            var lineWords = new HashSet<string>();
+
+            foreach (var token in Sentences[i].Tokens)
+            {
+                if (token is Word word)
+                {
+                    string wordText = word.Value.ToLower();
+
+                    if (!wordStats.ContainsKey(wordText))
+                        wordStats[wordText] = (0, new SortedSet<int>());
+
+                    wordStats[wordText] = (wordStats[wordText].count + 1, wordStats[wordText].lines);
+
+                    if (lineWords.Add(wordText))
+                        wordStats[wordText].lines.Add(i + 1);
+                }
+            }
+        }
+
+        var sortedWords = new List<string>(wordStats.Keys);
+        sortedWords.Sort();
+
+        foreach (string word in sortedWords)
+        {
+            var stats = wordStats[word];
+            Console.WriteLine($"{word.PadRight(20, '.')}{stats.count}: {string.Join(" ", stats.lines)}");
+        }
+    }
 }

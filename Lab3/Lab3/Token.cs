@@ -9,18 +9,7 @@ public abstract class Token
 
     protected Token() { }
 
-    public string Value { get
-        { 
-         return value; 
-        }
-
-        set
-        {
-            if (value.Length < 2) { 
-            this.value = value;
-        }
-            else this.value = value;
-        } }
+    public string Value { get; set;}
 
     protected Token(string value)
     {

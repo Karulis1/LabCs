@@ -186,7 +186,11 @@ public class Text
         foreach (string word in sortedWords)
         {
             var stats = wordStats[word];
-            Console.WriteLine($"{word.PadRight(20, '.')}{stats.Count}: {string.Join(" ", stats.Lines)}");
+            Console.ForegroundColor = ConsoleColor.DarkRed;
+            Console.Write($"{word.PadRight(20, '.')}");
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.WriteLine($"{stats.Count}: {string.Join(" ", stats.Lines)}");
+            Console.ResetColor();
         }
     }
 }

@@ -151,46 +151,57 @@ public class Text
             Console.WriteLine($"Ошибка при экспорте в XML: {ex.Message}");
         }
     }
-    public void BuildConcordance()
+    public void BuildConcordance(string filepath)
     {
+            //foreach (var token in Sentences[i].Tokens)
+            //{
+            //    if (token is Word word)
+            //    {
+            //        string wordText = word.Value.ToLower();
+
+            //        if (!wordStats.ContainsKey(wordText))
+            //        {
+            //            wordStats[wordText] = new WordStat();
+            //        }
+
+            //        wordStats[wordText].Count++;
+
+            //        if (lineWords.Add(wordText))
+            //        {
+            //            wordStats[wordText].Lines.Add(i + 1);
+            //        }
+            //    }
+            //}
         var wordStats = new Dictionary<string, WordStat>();
+        string[] lines = File.ReadAllLines(filepath);
 
-        for (int i = 0; i < Sentences.Count; i++)
+        for (int i = 0; i < lines.Length; i++)
         {
-            var lineWords = new HashSet<string>();
+            var uniqueWords = new HashSet<string>();
+            string[] words = lines[i].Split(" .,!?;:()-".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
 
-            foreach (var token in Sentences[i].Tokens)
+            foreach (string word in words)
             {
-                if (token is Word word)
-                {
-                    string wordText = word.Value.ToLower();
+                string cleanWord = word.ToLower();
+                if (!wordStats.ContainsKey(cleanWord))
+                    wordStats[cleanWord] = new WordStat();
 
-                    if (!wordStats.ContainsKey(wordText))
-                    {
-                        wordStats[wordText] = new WordStat();
-                    }
+                wordStats[cleanWord].Count++;
 
-                    wordStats[wordText].Count++;
-
-                    if (lineWords.Add(wordText))
-                    {
-                        wordStats[wordText].Lines.Add(i + 1);
-                    }
-                }
+                if (uniqueWords.Add(cleanWord))
+                    wordStats[cleanWord].Lines.Add(i + 1);
             }
         }
 
         var sortedWords = new List<string>(wordStats.Keys);
         sortedWords.Sort();
-
+        Console.WriteLine();
+        Console.WriteLine($"Строк: {lines.Length}, Слов: {wordStats.Count}");
+        Console.WriteLine();
         foreach (string word in sortedWords)
         {
             var stats = wordStats[word];
-            Console.ForegroundColor = ConsoleColor.DarkRed;
-            Console.Write($"{word.PadRight(20, '.')}");
-            Console.ForegroundColor = ConsoleColor.DarkGreen;
-            Console.WriteLine($"{stats.Count}: {string.Join(" ", stats.Lines)}");
-            Console.ResetColor();
+            Console.WriteLine($"{word.PadRight(20, '.')}{stats.Count}: {string.Join(" ", stats.Lines)}");
         }
     }
 }

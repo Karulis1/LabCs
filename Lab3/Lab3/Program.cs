@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Runtime.CompilerServices;
+using System.Text;
 using System.Xml.Serialization;
 
 class Program
@@ -72,7 +73,7 @@ public static void ShowMenu()
                 ExportToXml();
                 break;
             case "9":
-                BuildConcordance();
+                    BuildConcordance();
                 break;
                 case "0":
                 return;
@@ -203,6 +204,7 @@ public static void ShowAllText()
     }
     public static void BuildConcordance()
     {
-        text.BuildConcordance();
+        string filePath = "TEXT_Lab3.txt";
+        text.BuildConcordance(filePath);
     }
 }

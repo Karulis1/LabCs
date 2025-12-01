@@ -3,6 +3,6 @@
     public string BaseType { get; set; }
     public override double CalculateTotalCalories()
     {
-        return (Weight / 100) * Calories;
+        return Math.Round((Weight / 100) * Calories, 2);
     }
 }

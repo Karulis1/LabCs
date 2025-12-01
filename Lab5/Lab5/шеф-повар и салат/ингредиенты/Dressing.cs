@@ -6,6 +6,6 @@
 
     public override double CalculateTotalCalories()
     {
-        return (Weight / 100) * Calories;
+        return Math.Round((Weight / 100) * Calories, 2);
     }
 }

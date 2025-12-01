@@ -8,6 +8,12 @@
     public abstract double CalculateTotalCalories();
     public virtual double CalculateTotalPrice()
     {
-        return (Weight / 100) * Price;
+        return Math.Round((Weight / 100) * Price, 2);
+    }
+
+    public virtual string GetInfo()
+    {
+        return string.Format("{0} ({1}г) - {2} ккал/100г, {3} руб./100г",
+            Name, Weight, Calories, Price);
     }
 }

@@ -1,4 +1,5 @@
 ﻿public class Fruit : VegetableFruit
 {
-    public string Type { get; set; }
+    public string FruitType { get; set; }
+    public double SugarContent { get; set; }
 }

@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="обработка\список салатов\" />
+    <Folder Include="obrabotka\spisok\" />
   </ItemGroup>
 
 </Project>

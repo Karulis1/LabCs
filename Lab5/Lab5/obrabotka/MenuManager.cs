@@ -6,13 +6,60 @@
         {
             private Chef chef;
             private List<Salad> salads;
-
+            private List<Ingredient> predefinedIngredients;
             public SaladMenu()
             {
                 chef = new Chef();
                 salads = new List<Salad>();
+                predefinedIngredients = new List<Ingredient>();
+                CreatePredefinedIngredients();
             }
+            private void CreatePredefinedIngredients()
+            {
+                predefinedIngredients.Add(chef.CreateVegetable("Плодовый", "Помидоры", "Красный",
+                    100, 18, 70, 1.2, "Пасленовые", true));
+                predefinedIngredients.Add(chef.CreateVegetable("Плодовый", "Огурцы", "Зеленый",
+                    100, 15, 40, 0.5, "Тыквенные", true));
+                predefinedIngredients.Add(chef.CreateVegetable("Плодовый", "Сладкий перец", "Желтый",
+                    100, 27, 60, 1.8, "Пасленовые", true));
+                predefinedIngredients.Add(chef.CreateVegetable("Корнеплод", "Морковь", "Оранжевый",
+                    100, 41, 30, 2.8, "Зонтичные", true));
+                predefinedIngredients.Add(chef.CreateVegetable("Корнеплод", "Картофель", "Коричневый",
+                    100, 77, 20, 2.2, "Пасленовые", true));
+                predefinedIngredients.Add(chef.CreateVegetable("Листовой", "Салат Айсберг", "Зеленый",
+                    100, 14, 50, 1.2, "Астровые", true));
+                predefinedIngredients.Add(chef.CreateVegetable("Листовой", "Шпинат", "Темно-зеленый",
+                    100, 23, 80, 2.2, "Амарантовые", true));
 
+                predefinedIngredients.Add(chef.CreateProtein("Мясо", "Куриная грудка", false,
+                    100, 165, 150, 31));
+                predefinedIngredients.Add(chef.CreateProtein("Мясо", "Говядина", false,
+                    100, 250, 200, 26));
+                predefinedIngredients.Add(chef.CreateProtein("Рыба", "Лосось", false,
+                    100, 208, 300, 20));
+                predefinedIngredients.Add(chef.CreateProtein("Бобовые", "Тофу", true,
+                    100, 76, 120, 8));
+
+                predefinedIngredients.Add(chef.CreateDressing("Масляная", "Оливковое масло", false,
+                    100, 884, 200, 100));
+                predefinedIngredients.Add(chef.CreateDressing("Кремовая", "Майонез", true,
+                    100, 680, 150, 75));
+                predefinedIngredients.Add(chef.CreateDressing("Кислая", "Бальзамический уксус", false,
+                    100, 88, 180, 0));
+                predefinedIngredients.Add(chef.CreateDressing("Кремовая", "Сметана", true,
+                    100, 206, 80, 20));
+
+                predefinedIngredients.Add(chef.CreateBase("Листовой", "Салат Романо", 100, 17, 90, true));
+                predefinedIngredients.Add(chef.CreateBase("Листовой", "Руккола", 100, 25, 120, true));
+                predefinedIngredients.Add(chef.CreateBase("Листовой", "Кресс-салат", 100, 32, 110, true));
+
+                predefinedIngredients.Add(chef.CreateCrunchy("Сухарики", "Гренки", 8.5,
+                    100, 386, 80, "Хрустящие"));
+                predefinedIngredients.Add(chef.CreateCrunchy("Орехи", "Грецкие орехи", 7.5,
+                    100, 654, 200, "Хрустящие"));
+                predefinedIngredients.Add(chef.CreateCrunchy("Семена", "Семечки подсолнечника", 6.5,
+                    100, 584, 150, "Хрустящие"));
+            }
             public void Run()
             {
                 Console.WriteLine("ШЕФ-ПОВАР: система создания салатов\n");
@@ -481,6 +528,8 @@
             private void SaveSaladToFile()
             {
                 Console.Clear();
+                Console.WriteLine("СОХРАНЕНИЕ САЛАТА В XML ФАЙЛ");
+                Console.WriteLine("===========================");
 
                 if (salads.Count == 0)
                 {
@@ -496,17 +545,70 @@
                 {
                     Salad salad = salads[index - 1];
 
-                    Console.Write("Введите имя файла (например, my_salad.recipe): ");
-                    string fileName = Console.ReadLine();
+                    Console.WriteLine($"\nВыбран салат: {salad.Name}");
+
+                    Console.WriteLine("\nВарианты сохранения:");
+                    Console.WriteLine("1. Сохранить в указанный файл");
+                    Console.WriteLine("2. Сохранить в стандартный файл (рекомендуется)");
+                    Console.Write("Выберите вариант (1 или 2): ");
+
+                    string saveOption = Console.ReadLine();
+                    string filePath;
+
+                    if (saveOption == "1")
+                    {
+                        Console.Write("\nВведите имя XML файла (например, my_salad.xml): ");
+                        string fileName = Console.ReadLine();
+
+                        if (!fileName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
+                        {
+                            fileName += ".xml";
+                            Console.WriteLine($"Файл будет сохранен как: {fileName}");
+                        }
+
+                        filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fileName);
+                    }
+                    else
+                    {
+                        string safeName = MakeFileNameSafe(salad.Name);
+                        string fileName = $"{safeName}_{DateTime.Now:yyyyMMdd_HHmmss}.xml";
+                        filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SavedSalads", fileName);
+
+                        Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+
+                        Console.WriteLine($"\nСалат будет сохранен в: {filePath}");
+                    }
 
                     try
                     {
-                        FileManager.SaveSaladToFile(salad, @"C:\Users\voidt\source\repos\LAbCSh\LabCSh\Lab5\Lab5\обработка\список салатов");
-                        Console.WriteLine($"Рецепт сохранен в файл '{fileName}'");
+                        FileManager.SaveSaladToFile(salad, filePath);
+                        Console.WriteLine($"\n✓ Салат успешно сохранен!");
+
+                        FileInfo fileInfo = new FileInfo(filePath);
+                        Console.WriteLine($"Размер файла: {fileInfo.Length} байт");
+                        Console.WriteLine($"Полный путь: {filePath}");
+
+                        Console.Write("\nПоказать содержимое XML файла? (y/n): ");
+                        string showContent = Console.ReadLine();
+                        if (showContent.ToLower() == "y")
+                        {
+                            try
+                            {
+                                string xmlContent = File.ReadAllText(filePath);
+                                Console.WriteLine("\n=== СОДЕРЖИМОЕ XML ФАЙЛА ===");
+                                Console.WriteLine(xmlContent);
+                                Console.WriteLine("=== КОНЕЦ ФАЙЛА ===");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Не удалось прочитать файл: {ex.Message}");
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Ошибка при сохранении: {ex.Message}");
+                        Console.WriteLine($"\n✗ Ошибка при сохранении: {ex.Message}");
+                        Console.WriteLine("Проверьте права доступа к папке и убедитесь, что путь корректен.");
                     }
                 }
                 else if (index != 0)
@@ -515,6 +617,16 @@
                 }
 
                 WaitForContinue();
+            }
+
+            private string MakeFileNameSafe(string fileName)
+            {
+                string invalidChars = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
+                foreach (char c in invalidChars)
+                {
+                    fileName = fileName.Replace(c.ToString(), "_");
+                }
+                return fileName.Trim();
             }
 
             private void CreateCustomSalad()
@@ -541,34 +653,22 @@
                 while (continueAdding)
                 {
                     Console.WriteLine("\nВыберите тип ингредиента:");
-                    Console.WriteLine("1. Овощ");
-                    Console.WriteLine("2. Заправка");
-                    Console.WriteLine("3. Основа (листья)");
-                    Console.WriteLine("4. Белок (мясо)");
-                    Console.WriteLine("5. Хрустящий элемент");
-                    Console.WriteLine("6. Завершить создание салата");
-                    Console.Write("Ваш выбор (1-6): ");
+                    Console.WriteLine("1. Добавить новый ингредиент");
+                    Console.WriteLine("2. Выбрать из предопределенных ингредиентов");
+                    Console.WriteLine("3. Завершить создание салата");
+                    Console.Write("Ваш выбор (1-3): ");
 
                     string choice = Console.ReadLine();
 
                     switch (choice)
                     {
                         case "1":
-                            AddVegetableToSalad(newSalad);
+                            AddNewIngredientToSalad(newSalad);
                             break;
                         case "2":
-                            AddDressingToSalad(newSalad);
+                            AddPredefinedIngredientToSalad(newSalad);
                             break;
                         case "3":
-                            AddBaseToSalad(newSalad);
-                            break;
-                        case "4":
-                            AddProteinToSalad(newSalad);
-                            break;
-                        case "5":
-                            AddCrunchyToSalad(newSalad);
-                            break;
-                        case "6":
                             continueAdding = false;
                             break;
                         default:
@@ -582,6 +682,213 @@
                 newSalad.PrintSaladInfo();
 
                 WaitForContinue();
+            }
+            private void AddNewIngredientToSalad(Salad salad)
+            {
+                Console.WriteLine("\nВыберите тип ингредиента:");
+                Console.WriteLine("1. Овощ");
+                Console.WriteLine("2. Заправка");
+                Console.WriteLine("3. Основа (листья)");
+                Console.WriteLine("4. Белок (мясо)");
+                Console.WriteLine("5. Хрустящий элемент");
+                Console.WriteLine("6. Отмена");
+                Console.Write("Ваш выбор (1-6): ");
+
+                string choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        AddVegetableToSalad(salad);
+                        break;
+                    case "2":
+                        AddDressingToSalad(salad);
+                        break;
+                    case "3":
+                        AddBaseToSalad(salad);
+                        break;
+                    case "4":
+                        AddProteinToSalad(salad);
+                        break;
+                    case "5":
+                        AddCrunchyToSalad(salad);
+                        break;
+                    case "6":
+                        Console.WriteLine("Отмена создания ингредиента.");
+                        break;
+                    default:
+                        Console.WriteLine("Неверный выбор.");
+                        break;
+                }
+            }
+            private void AddPredefinedIngredientToSalad(Salad salad)
+            {
+                Console.WriteLine("\nВыберите категорию ингредиентов:");
+                Console.WriteLine("1. Овощи");
+                Console.WriteLine("2. Белки");
+                Console.WriteLine("3. Заправки");
+                Console.WriteLine("4. Основы (листья)");
+                Console.WriteLine("5. Хрустящие элементы");
+                Console.WriteLine("6. Показать все ингредиенты");
+                Console.WriteLine("7. Отмена");
+                Console.Write("Ваш выбор (1-7): ");
+
+                string categoryChoice = Console.ReadLine();
+
+                List<Ingredient> filteredIngredients = new List<Ingredient>();
+
+                switch (categoryChoice)
+                {
+                    case "1": 
+                        filteredIngredients = predefinedIngredients.Where(i => i is Vegetable).ToList();
+                        Console.WriteLine("\nПредопределенные овощи:");
+                        break;
+                    case "2": 
+                        filteredIngredients = predefinedIngredients.Where(i => i is Protein).ToList();
+                        Console.WriteLine("\nПредопределенные белки:");
+                        break;
+                    case "3": 
+                        filteredIngredients = predefinedIngredients.Where(i => i is Dressing).ToList();
+                        Console.WriteLine("\nПредопределенные заправки:");
+                        break;
+                    case "4":
+                        filteredIngredients = predefinedIngredients.Where(i => i is Base).ToList();
+                        Console.WriteLine("\nПредопределенные основы:");
+                        break;
+                    case "5": 
+                        filteredIngredients = predefinedIngredients.Where(i => i is Crunchy).ToList();
+                        Console.WriteLine("\nПредопределенные хрустящие элементы:");
+                        break;
+                    case "6": 
+                        filteredIngredients = predefinedIngredients;
+                        Console.WriteLine("\nВсе предопределенные ингредиенты:");
+                        break;
+                    case "7":
+                        Console.WriteLine("Отмена выбора ингредиента.");
+                        return;
+                    default:
+                        Console.WriteLine("Неверный выбор.");
+                        return;
+                }
+
+                if (filteredIngredients.Count == 0)
+                {
+                    Console.WriteLine("Нет ингредиентов в выбранной категории.");
+                    return;
+                }
+
+                for (int i = 0; i < filteredIngredients.Count; i++)
+                {
+                    var ingredient = filteredIngredients[i];
+                    string type = GetIngredientType(ingredient);
+                    Console.WriteLine($"{i + 1}. {ingredient.Name} ({type}) - {ingredient.Calories} ккал/100г, {ingredient.Price} руб/кг");
+                }
+
+                Console.Write("\nВыберите номер ингредиента (0 - отмена): ");
+                if (int.TryParse(Console.ReadLine(), out int index) && index > 0 && index <= filteredIngredients.Count)
+                {
+                    var selectedIngredient = filteredIngredients[index - 1];
+
+                    Console.Write($"Введите вес для '{selectedIngredient.Name}' (г): ");
+                    if (double.TryParse(Console.ReadLine(), out double weight) && weight > 0)
+                    {
+                        Ingredient newIngredient = CreateIngredientCopy(selectedIngredient, weight);
+
+                        if (newIngredient != null)
+                        {
+                            salad.AddIngredient(newIngredient);
+                            Console.WriteLine($"Ингредиент '{selectedIngredient.Name}' ({weight}г) добавлен в салат!");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Ошибка при создании ингредиента.");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Неверный вес. Ингредиент не добавлен.");
+                    }
+                }
+                else if (index != 0)
+                {
+                    Console.WriteLine("Неверный номер ингредиента.");
+                }
+            }
+
+            private string GetIngredientType(Ingredient ingredient)
+            {
+                if (ingredient is Vegetable) return "Овощ";
+                if (ingredient is Protein) return "Белок";
+                if (ingredient is Dressing) return "Заправка";
+                if (ingredient is Base) return "Основа";
+                if (ingredient is Crunchy) return "Хрустящий элемент";
+                return "Неизвестно";
+            }
+            private Ingredient CreateIngredientCopy(Ingredient original, double weight)
+            {
+                if (original is Vegetable veg)
+                {
+                    return chef.CreateVegetable(
+                        veg.VegetableType,
+                        veg.Name,
+                        veg.Color,
+                        weight,
+                        veg.Calories,
+                        veg.Price,
+                        veg.FiberContent,
+                        "",
+                        true
+                    );
+                }
+                else if (original is Protein protein)
+                {
+                    return chef.CreateProtein(
+                        protein.ProteinType,
+                        protein.Name,
+                        protein.IsVegetarian,
+                        weight,
+                        protein.Calories,
+                        protein.Price,
+                        protein.ProteinContent
+                    );
+                }
+                else if (original is Dressing dressing)
+                {
+                    return chef.CreateDressing(
+                        dressing.DressingType,
+                        dressing.Name,
+                        dressing.IsCreamy,
+                        weight,
+                        dressing.Calories,
+                        dressing.Price,
+                        dressing.FatContent
+                    );
+                }
+                else if (original is Base baseIngredient)
+                {
+                    return chef.CreateBase(
+                        baseIngredient.BaseType,
+                        baseIngredient.Name,
+                        weight,
+                        baseIngredient.Calories,
+                        baseIngredient.Price,
+                        true
+                    );
+                }
+                else if (original is Crunchy crunchy)
+                {
+                    return chef.CreateCrunchy(
+                        crunchy.CrunchyType,
+                        crunchy.Name,
+                        crunchy.CrunchinessLevel,
+                        weight,
+                        crunchy.Calories,
+                        crunchy.Price,
+                        crunchy.Texture
+                    );
+                }
+
+                return null;
             }
 
             private void AddVegetableToSalad(Salad salad)

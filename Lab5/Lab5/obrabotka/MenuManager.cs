@@ -96,7 +96,7 @@ namespace Lab5.обработка
                 Console.Clear();
                 Console.WriteLine($"Конструктор салатов");
                 Console.WriteLine($"Пользователь: {Logger.CurrentUserName}");
-                Console.WriteLine($"Режим: {(Logger.IsAdmin() ? "АДМИНИСТРАТОР" : "ГОСТЬ")}");
+                Console.WriteLine($"Режим: {(Logger.IsAdmin() ? "АДМИНИСТРАТОР" : "ЮЗЕР")}");
                 Console.WriteLine($"Всего салатов: {salads.Count}");
                 Console.WriteLine();
                 Console.WriteLine("1. Показать информацию о салате");

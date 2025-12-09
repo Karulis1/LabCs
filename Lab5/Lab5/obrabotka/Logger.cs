@@ -22,8 +22,8 @@ namespace Lab5.обработка
             Security
         }
 
-        public static UserType CurrentUser { get; private set; } = UserType.User;
-        public static string CurrentUserName { get; private set; } = "ПОЛЬЗОВАТЕЛЬ";
+        public static UserType CurrentUser { get; private set; } = UserType.Guest;
+        public static string CurrentUserName { get; private set; } = "Гость";
 
         private static readonly string logFilePath;
         private static readonly string usersFilePath;
@@ -138,8 +138,8 @@ namespace Lab5.обработка
             string previousUser = CurrentUserName;
             UserType previousType = CurrentUser;
 
-            CurrentUser = UserType.User;
-            CurrentUserName = "ПОЛЬЗОВАТЕЛЬ";
+            CurrentUser = UserType.Guest;
+            CurrentUserName = "Гость";
 
             Log(LogLevel.Security, "Пользователь вышел из системы",
                 $"Предыдущий пользователь: {previousUser}, Тип: {previousType}");

@@ -1,4 +1,9 @@
-﻿namespace Lab5.обработка
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+namespace Lab5.обработка
 {
     internal class MenuManager
     {
@@ -7,6 +12,7 @@
             private Chef chef;
             private List<Salad> salads;
             private List<Ingredient> predefinedIngredients;
+
             public SaladMenu()
             {
                 chef = new Chef();
@@ -14,6 +20,195 @@
                 predefinedIngredients = new List<Ingredient>();
                 CreatePredefinedIngredients();
             }
+
+            public void Run()
+            {
+                Console.Clear();
+                Console.WriteLine("Конструктор салатов\n");
+
+                AuthenticateUser();
+                CreatePredefinedSalads();
+                while (true)
+                {
+                    ShowMainMenu();
+                }
+            }
+
+            private void AuthenticateUser()
+            {
+                bool authenticated = false;
+
+                while (!authenticated)
+                {
+                    Console.Write("Имя пользователя: ");
+                    string username = Console.ReadLine();
+
+                    Console.Write("Пароль: ");
+                    string password = ReadPassword();
+
+                    if (Logger.Login(username, password))
+                    {
+                        authenticated = true;
+                        Console.WriteLine($"\n✓ Успешный вход! Добро пожаловать, {username}");
+
+                        if (Logger.IsAdmin())
+                        {
+                            Console.WriteLine("Режим: АДМИНИСТРАТОР");
+                        }
+
+                        WaitForContinue();
+                    }
+                    else
+                    {
+                        Console.WriteLine("\nНеверное имя пользователя или пароль.");
+                        Console.WriteLine("\nПопробуйте снова...\n");
+                    }
+                }
+            }
+
+            private string ReadPassword()
+            {
+                string password = "";
+                ConsoleKeyInfo key;
+
+                do
+                {
+                    key = Console.ReadKey(true);
+
+                    if (key.Key != ConsoleKey.Backspace && key.Key != ConsoleKey.Enter)
+                    {
+                        password += key.KeyChar;
+                        Console.Write("*");
+                    }
+                    else if (key.Key == ConsoleKey.Backspace && password.Length > 0)
+                    {
+                        password = password.Substring(0, password.Length - 1);
+                        Console.Write("\b \b");
+                    }
+                } while (key.Key != ConsoleKey.Enter);
+
+                Console.WriteLine();
+                return password;
+            }
+
+            private void ShowMainMenu()
+            {
+                Console.Clear();
+                Console.WriteLine($"Конструктор салатов");
+                Console.WriteLine($"Пользователь: {Logger.CurrentUserName}");
+                Console.WriteLine($"Режим: {(Logger.IsAdmin() ? "АДМИНИСТРАТОР" : "ГОСТЬ")}");
+                Console.WriteLine($"Всего салатов: {salads.Count}");
+                Console.WriteLine();
+                Console.WriteLine("1. Показать информацию о салате");
+                Console.WriteLine("2. Показать детальную информацию о салате");
+                Console.WriteLine("3. Анализировать салаты");
+                Console.WriteLine("4. Сохранить салат в файл");
+                Console.WriteLine("5. Создать новый салат");
+                Console.WriteLine("6. Показать все салаты");
+                Console.WriteLine("7. Поиск салата по названию");
+                Console.WriteLine("8. Показать салаты отсортированные по калорийности");
+                Console.WriteLine("9. Показать салаты отсортированные по стоимости");
+                Console.WriteLine("10. Показать салаты отсортированные по дате создания");
+                Console.WriteLine("11. Загрузить салаты из файла");
+                Console.WriteLine("12. Показать овощи в диапазоне калорий");
+
+                if (Logger.IsAdmin())
+                {
+                    Console.WriteLine("13. Удалить салат");
+                    Console.WriteLine("14. Выйти из системы");
+                    Console.WriteLine("15. Выйти из программы");
+                    Console.Write("\nВыберите действие (1-15): ");
+                }
+                else
+                {
+                    Console.WriteLine("13. Выйти из системы");
+                    Console.WriteLine("14. Выйти из программы");
+                    Console.Write("\nВыберите действие (1-14): ");
+                }
+
+                ProcessMenuSelection();
+            }
+
+            private void ProcessMenuSelection()
+            {
+                string input = Console.ReadLine();
+                int maxOption = Logger.IsAdmin() ? 15 : 14;
+
+                if (!int.TryParse(input, out int choice) || choice < 1 || choice > maxOption)
+                {
+                    Console.WriteLine("Неверный выбор. Попробуйте снова.");
+                    Logger.LogWarning("Неверный выбор в меню", $"Ввод: {input}");
+                    WaitForContinue();
+                    return;
+                }
+
+                switch (choice)
+                {
+                    case 1:
+                        ShowSaladInfo();
+                        break;
+                    case 2:
+                        ShowDetailedSaladInfo();
+                        break;
+                    case 3:
+                        AnalyzeSalads();
+                        break;
+                    case 4:
+                        SaveSaladToFile();
+                        break;
+                    case 5:
+                        CreateCustomSalad();
+                        break;
+                    case 6:
+                        ShowAllSalads();
+                        break;
+                    case 7:
+                        SearchSaladByName();
+                        break;
+                    case 8:
+                        ShowSaladsSortedByCalories();
+                        break;
+                    case 9:
+                        ShowSaladsSortedByPrice();
+                        break;
+                    case 10:
+                        ShowSaladsSortedByDate();
+                        break;
+                    case 11:
+                        LoadSaladsFromFile();
+                        break;
+                    case 12:
+                        SearchVegetablesByCalorieRange();
+                        break;
+                    case 13:
+                        if (Logger.IsAdmin())
+                        {
+                            DeleteSalad();
+                        }
+                        else
+                        {
+                            LogoutAndReturnToAuth();
+                        }
+                        break;
+                    case 14:
+                        if (Logger.IsAdmin())
+                        {
+                            LogoutAndReturnToAuth();
+                        }
+                        else
+                        {
+                            ExitProgram();
+                        }
+                        break;
+                    case 15:
+                        if (Logger.IsAdmin())
+                        {
+                            ExitProgram();
+                        }
+                        break;
+                }
+            }
+
             private void CreatePredefinedIngredients()
             {
                 predefinedIngredients.Add(chef.CreateVegetable("Плодовый", "Помидоры", "Красный",
@@ -59,209 +254,8 @@
                     100, 654, 200, "Хрустящие"));
                 predefinedIngredients.Add(chef.CreateCrunchy("Семена", "Семечки подсолнечника", 6.5,
                     100, 584, 150, "Хрустящие"));
-            }
-            public void Run()
-            {
-                Console.WriteLine("ШЕФ-ПОВАР: система создания салатов\n");
-                CreatePredefinedSalads();
 
-                while (true)
-                {
-                    ShowMenu();
-                    ProcessSelection();
-                }
-            }
-
-            private void ShowMenu()
-            {
-                Console.WriteLine($"Всего салатов в системе: {salads.Count}");
-                Console.WriteLine();
-                Console.WriteLine("1. Показать информацию о салате");
-                Console.WriteLine("2. Показать детальную информацию о салате");
-                Console.WriteLine("3. Анализировать салаты");
-                Console.WriteLine("4. Сохранить салат в файл");
-                Console.WriteLine("5. Создать новый салат");
-                Console.WriteLine("6. Показать все салаты");
-                Console.WriteLine("7. Удалить салат");
-                Console.WriteLine("8. Поиск салата по названию");
-                Console.WriteLine("9. Показать салаты отсортированные по калорийности");
-                Console.WriteLine("10. Показать салаты отсортированные по стоимости");
-                Console.WriteLine("11. Показать салаты отсортированные по дате создания");
-                Console.WriteLine("12. Загрузить салаты из файла");
-                Console.WriteLine("13. Показать овощи в дмапазоне калорий");
-                Console.WriteLine("14. Выйти из программы");
-                Console.WriteLine();
-                Console.Write("Выберите действие (1-13): ");
-            }
-
-            private void ProcessSelection()
-            {
-                string input = Console.ReadLine();
-
-                switch (input)
-                {
-                    case "1":
-                        ShowSaladInfo();
-                        break;
-                    case "2":
-                        ShowDetailedSaladInfo();
-                        break;
-                    case "3":
-                        AnalyzeSalads();
-                        break;
-                    case "4":
-                        SaveSaladToFile();
-                        break;
-                    case "5":
-                        CreateCustomSalad();
-                        break;
-                    case "6":
-                        ShowAllSalads();
-                        break;
-                    case "7":
-                        DeleteSalad();
-                        break;
-                    case "8":
-                        SearchSaladByName();
-                        break;
-                    case "9":
-                        ShowSaladsSortedByCalories();
-                        break;
-                    case "10":
-                        ShowSaladsSortedByPrice();
-                        break;
-                    case "11":
-                        ShowSaladsSortedByDate();
-                        break;
-                    case "12":
-                        LoadSaladsFromFile();
-                        break;
-                    case "13":
-                        SearchVegetablesByCalorieRange();
-                        break;
-                    case "14":
-                        Environment.Exit(0);
-                        break;
-                    default:
-                        Console.WriteLine("Неверный выбор. Попробуйте снова.");
-                        break;
-                }
-            }
-            private void SearchVegetablesByCalorieRange()
-            {
-                Console.Clear();
-                Console.WriteLine("Поиск овощей по диапазну калорий");
-                Console.WriteLine("----------------------------------------------");
-
-                if (salads.Count == 0)
-                {
-                    Console.WriteLine("Нет салатов для поиска.");
-                    WaitForContinue();
-                    return;
-                }
-
-                Console.WriteLine("\nВыберите салат для поиска овощей:");
-                ShowSaladList();
-                Console.Write("Ваш выбор (0 - отмена): ");
-
-                if (!int.TryParse(Console.ReadLine(), out int saladIndex) || saladIndex < 1 || saladIndex > salads.Count)
-                {
-                    if (saladIndex != 0) Console.WriteLine("Неверный номер салата.");
-                    WaitForContinue();
-                    return;
-                }
-
-                Salad selectedSalad = salads[saladIndex - 1];
-
-                List<Vegetable> vegetables = selectedSalad.GetVegetables();
-
-                if (vegetables.Count == 0)
-                {
-                    Console.WriteLine($"\nВ салате '{selectedSalad.Name}' нет овощей.");
-                    WaitForContinue();
-                    return;
-                }
-
-                Console.Write("\nВведите минимальную калорийность (ккал/100г): ");
-                if (!double.TryParse(Console.ReadLine(), out double minCalories))
-                {
-                    Console.WriteLine("Некорректное значение.");
-                    WaitForContinue();
-                    return;
-                }
-
-                Console.Write("Введите максимальную калорийность (ккал/100г): ");
-                if (!double.TryParse(Console.ReadLine(), out double maxCalories))
-                {
-                    Console.WriteLine("Некорректное значение.");
-                    WaitForContinue();
-                    return;
-                }
-
-                if (minCalories > maxCalories)
-                {
-                    Console.WriteLine("Минимальное значение не может быть больше максимального.");
-                    WaitForContinue();
-                    return;
-                }
-
-                Console.WriteLine($"\nПоиск овощей в салате '{selectedSalad.Name}'");
-                Console.WriteLine($"в диапазоне калорий: {minCalories} - {maxCalories} ккал/100г");
-                Console.WriteLine("-----------------------------");
-
-                List<Vegetable> foundVegetables = new List<Vegetable>();
-
-                foreach (Vegetable vegetable in vegetables)
-                {
-                    if (vegetable is ISearchableIngredient searchableVegetable)
-                    {
-                        if (searchableVegetable.IsInCalorieRange(minCalories, maxCalories))
-                        {
-                            foundVegetables.Add(vegetable);
-                        }
-                    }
-                }
-
-                if (foundVegetables.Count > 0)
-                {
-                    Console.WriteLine($"\nНайдено овощей: {foundVegetables.Count}");
-                    Console.WriteLine("----------------------------------------------");
-
-                    for (int i = 0; i < foundVegetables.Count; i++)
-                    {
-                        Vegetable veg = foundVegetables[i];
-                        Console.WriteLine($"{i + 1}. {veg.Name}");
-                        Console.WriteLine($"   Тип: {veg.VegetableType}");
-                        Console.WriteLine($"   Цвет: {veg.Color}");
-                        Console.WriteLine($"   Калорийность: {veg.Calories} ккал/100г");
-                        Console.WriteLine($"   Клетчатка: {veg.FiberContent:F1}г/100г");
-                        Console.WriteLine($"   Вес в салате: {veg.Weight}г");
-                        Console.WriteLine($"   Стоимость: {veg.CalculateTotalPrice():F1} руб.");
-                        Console.WriteLine();
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("\nОвощей в указанном диапазоне калорий не найдено.");
-                }
-                if (vegetables.Count > 0)
-                {
-                    Vegetable minCalVeg = vegetables[0];
-                    Vegetable maxCalVeg = vegetables[0];
-
-                    foreach (Vegetable veg in vegetables)
-                    {
-                        if (veg.Calories < minCalVeg.Calories)
-                            minCalVeg = veg;
-                        if (veg.Calories > maxCalVeg.Calories)
-                            maxCalVeg = veg;
-                    }
-
-                    Console.WriteLine($"Овощ с минимальной калорийностью: {minCalVeg.Name} ({minCalVeg.Calories} ккал)");
-                    Console.WriteLine($"Овощ с максимальной калорийностью: {maxCalVeg.Name} ({maxCalVeg.Calories} ккал)");
-                }
-
-                WaitForContinue();
+                Logger.LogInfo("Созданы предопределенные ингредиенты", $"Количество: {predefinedIngredients.Count}");
             }
 
             private void CreatePredefinedSalads()
@@ -294,11 +288,14 @@
                     80, 350, 180, 36));
 
                 salads.Add(caesarSalad);
+
+                Logger.LogInfo("Созданы предопределенные салаты", $"Количество: {salads.Count}");
             }
 
             private void ShowSaladInfo()
             {
                 Console.Clear();
+                Logger.LogInfo("Показать информацию о салате", $"Пользователь: {Logger.CurrentUserName}");
 
                 if (salads.Count == 0)
                 {
@@ -320,6 +317,9 @@
                     Console.WriteLine($"Общая стоимость: {salad.CalculateTotalPrice():F1} руб.");
                     Console.WriteLine($"Общий вес: {salad.CalculateTotalWeight():F1} г");
                     Console.WriteLine($"Количество ингредиентов: {salad.GetIngredients().Count}");
+
+                    Logger.LogInfo("Просмотр информации о салате",
+                        $"Салат: {salad.Name}, Ингредиентов: {salad.GetIngredients().Count}");
                 }
                 else if (index != 0)
                 {
@@ -332,6 +332,7 @@
             private void ShowDetailedSaladInfo()
             {
                 Console.Clear();
+                Logger.LogInfo("Показать детальную информацию о салате", $"Пользователь: {Logger.CurrentUserName}");
 
                 if (salads.Count == 0)
                 {
@@ -347,6 +348,9 @@
                 {
                     Salad salad = salads[index - 1];
                     salad.PrintSaladInfo();
+
+                    Logger.LogInfo("Детальный просмотр салата",
+                        $"Салат: {salad.Name}, Вес: {salad.CalculateTotalWeight():F1}г, Калории: {salad.CalculateTotalCalories():F1}ккал");
                 }
                 else if (index != 0)
                 {
@@ -359,7 +363,7 @@
             private void AnalyzeSalads()
             {
                 Console.Clear();
-                Console.WriteLine("Анализ салатов:");
+                Logger.LogInfo("Анализ салатов", $"Пользователь: {Logger.CurrentUserName}");
 
                 if (salads.Count == 0)
                 {
@@ -367,6 +371,8 @@
                     WaitForContinue();
                     return;
                 }
+
+                Console.WriteLine("Анализ салатов:");
 
                 Console.WriteLine($"\nОбщая статистика:");
                 Console.WriteLine($"Всего салатов: {salads.Count}");
@@ -383,6 +389,9 @@
 
                 Console.WriteLine("\n3. Сортировка ингредиентов по калорийности:");
                 ShowIngredientsSortedByCalories();
+
+                Logger.LogInfo("Проведен анализ салатов",
+                    $"Салатов: {salads.Count}, Ингредиентов: {GetTotalIngredientsCount()}");
 
                 WaitForContinue();
             }
@@ -528,9 +537,7 @@
             private void SaveSaladToFile()
             {
                 Console.Clear();
-                Console.WriteLine("СОХРАНЕНИЕ САЛАТА В XML ФАЙЛ");
-                Console.WriteLine("===========================");
-
+                Console.WriteLine("Сохранение в xml");
                 if (salads.Count == 0)
                 {
                     Console.WriteLine("Нет салатов для сохранения.");
@@ -571,7 +578,7 @@
                     else
                     {
                         string safeName = MakeFileNameSafe(salad.Name);
-                        string fileName = $"{safeName}_{DateTime.Now:yyyyMMdd_HHmmss}.xml";
+                        string fileName = $"{safeName}.xml";
                         filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SavedSalads", fileName);
 
                         Directory.CreateDirectory(Path.GetDirectoryName(filePath));
@@ -584,6 +591,8 @@
                         FileManager.SaveSaladToFile(salad, filePath);
                         Console.WriteLine($"\n✓ Салат успешно сохранен!");
 
+                        Logger.LogFileSaved(filePath, salad.Name);
+
                         FileInfo fileInfo = new FileInfo(filePath);
                         Console.WriteLine($"Размер файла: {fileInfo.Length} байт");
                         Console.WriteLine($"Полный путь: {filePath}");
@@ -595,9 +604,7 @@
                             try
                             {
                                 string xmlContent = File.ReadAllText(filePath);
-                                Console.WriteLine("\n=== СОДЕРЖИМОЕ XML ФАЙЛА ===");
                                 Console.WriteLine(xmlContent);
-                                Console.WriteLine("=== КОНЕЦ ФАЙЛА ===");
                             }
                             catch (Exception ex)
                             {
@@ -609,6 +616,7 @@
                     {
                         Console.WriteLine($"\n✗ Ошибка при сохранении: {ex.Message}");
                         Console.WriteLine("Проверьте права доступа к папке и убедитесь, что путь корректен.");
+                        Logger.LogError("Ошибка при сохранении салата в файл", ex.Message);
                     }
                 }
                 else if (index != 0)
@@ -643,6 +651,8 @@
                 if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(description))
                 {
                     Console.WriteLine("Название и описание не могут быть пустыми!");
+                    Logger.LogWarning("Попытка создать салат без названия или описания",
+                        $"Пользователь: {Logger.CurrentUserName}");
                     WaitForContinue();
                     return;
                 }
@@ -650,6 +660,8 @@
                 Salad newSalad = chef.CreateSalad(name, description);
 
                 bool continueAdding = true;
+                int ingredientCount = 0;
+
                 while (continueAdding)
                 {
                     Console.WriteLine("\nВыберите тип ингредиента:");
@@ -664,9 +676,11 @@
                     {
                         case "1":
                             AddNewIngredientToSalad(newSalad);
+                            ingredientCount++;
                             break;
                         case "2":
-                            AddPredefinedIngredientToSalad(newSalad);
+                            if (AddPredefinedIngredientToSalad(newSalad))
+                                ingredientCount++;
                             break;
                         case "3":
                             continueAdding = false;
@@ -681,47 +695,13 @@
                 Console.WriteLine($"\nСалат '{name}' успешно создан!");
                 newSalad.PrintSaladInfo();
 
+                // Логируем создание салата
+                Logger.LogSaladCreated(name, ingredientCount);
+
                 WaitForContinue();
             }
-            private void AddNewIngredientToSalad(Salad salad)
-            {
-                Console.WriteLine("\nВыберите тип ингредиента:");
-                Console.WriteLine("1. Овощ");
-                Console.WriteLine("2. Заправка");
-                Console.WriteLine("3. Основа (листья)");
-                Console.WriteLine("4. Белок (мясо)");
-                Console.WriteLine("5. Хрустящий элемент");
-                Console.WriteLine("6. Отмена");
-                Console.Write("Ваш выбор (1-6): ");
 
-                string choice = Console.ReadLine();
-
-                switch (choice)
-                {
-                    case "1":
-                        AddVegetableToSalad(salad);
-                        break;
-                    case "2":
-                        AddDressingToSalad(salad);
-                        break;
-                    case "3":
-                        AddBaseToSalad(salad);
-                        break;
-                    case "4":
-                        AddProteinToSalad(salad);
-                        break;
-                    case "5":
-                        AddCrunchyToSalad(salad);
-                        break;
-                    case "6":
-                        Console.WriteLine("Отмена создания ингредиента.");
-                        break;
-                    default:
-                        Console.WriteLine("Неверный выбор.");
-                        break;
-                }
-            }
-            private void AddPredefinedIngredientToSalad(Salad salad)
+            private bool AddPredefinedIngredientToSalad(Salad salad)
             {
                 Console.WriteLine("\nВыберите категорию ингредиентов:");
                 Console.WriteLine("1. Овощи");
@@ -739,15 +719,15 @@
 
                 switch (categoryChoice)
                 {
-                    case "1": 
+                    case "1":
                         filteredIngredients = predefinedIngredients.Where(i => i is Vegetable).ToList();
                         Console.WriteLine("\nПредопределенные овощи:");
                         break;
-                    case "2": 
+                    case "2":
                         filteredIngredients = predefinedIngredients.Where(i => i is Protein).ToList();
                         Console.WriteLine("\nПредопределенные белки:");
                         break;
-                    case "3": 
+                    case "3":
                         filteredIngredients = predefinedIngredients.Where(i => i is Dressing).ToList();
                         Console.WriteLine("\nПредопределенные заправки:");
                         break;
@@ -755,26 +735,26 @@
                         filteredIngredients = predefinedIngredients.Where(i => i is Base).ToList();
                         Console.WriteLine("\nПредопределенные основы:");
                         break;
-                    case "5": 
+                    case "5":
                         filteredIngredients = predefinedIngredients.Where(i => i is Crunchy).ToList();
                         Console.WriteLine("\nПредопределенные хрустящие элементы:");
                         break;
-                    case "6": 
+                    case "6":
                         filteredIngredients = predefinedIngredients;
                         Console.WriteLine("\nВсе предопределенные ингредиенты:");
                         break;
                     case "7":
                         Console.WriteLine("Отмена выбора ингредиента.");
-                        return;
+                        return false;
                     default:
                         Console.WriteLine("Неверный выбор.");
-                        return;
+                        return false;
                 }
 
                 if (filteredIngredients.Count == 0)
                 {
                     Console.WriteLine("Нет ингредиентов в выбранной категории.");
-                    return;
+                    return false;
                 }
 
                 for (int i = 0; i < filteredIngredients.Count; i++)
@@ -798,6 +778,7 @@
                         {
                             salad.AddIngredient(newIngredient);
                             Console.WriteLine($"Ингредиент '{selectedIngredient.Name}' ({weight}г) добавлен в салат!");
+                            return true;
                         }
                         else
                         {
@@ -813,6 +794,8 @@
                 {
                     Console.WriteLine("Неверный номер ингредиента.");
                 }
+
+                return false;
             }
 
             private string GetIngredientType(Ingredient ingredient)
@@ -824,6 +807,7 @@
                 if (ingredient is Crunchy) return "Хрустящий элемент";
                 return "Неизвестно";
             }
+
             private Ingredient CreateIngredientCopy(Ingredient original, double weight)
             {
                 if (original is Vegetable veg)
@@ -889,6 +873,45 @@
                 }
 
                 return null;
+            }
+
+            private void AddNewIngredientToSalad(Salad salad)
+            {
+                Console.WriteLine("\nВыберите тип ингредиента:");
+                Console.WriteLine("1. Овощ");
+                Console.WriteLine("2. Заправка");
+                Console.WriteLine("3. Основа (листья)");
+                Console.WriteLine("4. Белок (мясо)");
+                Console.WriteLine("5. Хрустящий элемент");
+                Console.WriteLine("6. Отмена");
+                Console.Write("Ваш выбор (1-6): ");
+
+                string choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        AddVegetableToSalad(salad);
+                        break;
+                    case "2":
+                        AddDressingToSalad(salad);
+                        break;
+                    case "3":
+                        AddBaseToSalad(salad);
+                        break;
+                    case "4":
+                        AddProteinToSalad(salad);
+                        break;
+                    case "5":
+                        AddCrunchyToSalad(salad);
+                        break;
+                    case "6":
+                        Console.WriteLine("Отмена создания ингредиента.");
+                        break;
+                    default:
+                        Console.WriteLine("Неверный выбор.");
+                        break;
+                }
             }
 
             private void AddVegetableToSalad(Salad salad)
@@ -1082,6 +1105,8 @@
             private void ShowAllSalads()
             {
                 Console.Clear();
+                Logger.LogInfo("Показать все салаты", $"Пользователь: {Logger.CurrentUserName}");
+
                 Console.WriteLine("Все салаты:");
 
                 if (salads.Count == 0)
@@ -1132,6 +1157,8 @@
                     {
                         salads.RemoveAt(index - 1);
                         Console.WriteLine("Салат успешно удален!");
+
+                        Logger.LogSaladDeleted(saladToRemove.Name);
                     }
                     else
                     {
@@ -1149,6 +1176,8 @@
             private void SearchSaladByName()
             {
                 Console.Clear();
+                Logger.LogInfo("Поиск салата по названию", $"Пользователь: {Logger.CurrentUserName}");
+
                 Console.WriteLine("Поиск салата по названию");
 
                 Console.Write("Введите часть названия для поиска: ");
@@ -1171,6 +1200,9 @@
                         Salad salad = foundSalads[i];
                         Console.WriteLine($"{i + 1}. {salad.Name} - {salad.Description}");
                     }
+
+                    Logger.LogInfo("Поиск салатов по названию",
+                        $"Запрос: '{searchTerm}', Найдено: {foundSalads.Count}");
                 }
                 else
                 {
@@ -1183,7 +1215,7 @@
             private void ShowSaladsSortedByCalories()
             {
                 Console.Clear();
-                Console.WriteLine("Салаты отсортированные по калорийности");
+                Logger.LogInfo("Сортировка салатов по калорийности", $"Пользователь: {Logger.CurrentUserName}");
 
                 if (salads.Count == 0)
                 {
@@ -1238,7 +1270,7 @@
             private void ShowSaladsSortedByPrice()
             {
                 Console.Clear();
-                Console.WriteLine("Салаты отсортированные по стоимости");
+                Logger.LogInfo("Сортировка салатов по стоимости", $"Пользователь: {Logger.CurrentUserName}");
 
                 if (salads.Count == 0)
                 {
@@ -1293,7 +1325,7 @@
             private void ShowSaladsSortedByDate()
             {
                 Console.Clear();
-                Console.WriteLine("Салаты отсортированные по дате создания");
+                Logger.LogInfo("Сортировка салатов по дате", $"Пользователь: {Logger.CurrentUserName}");
 
                 if (salads.Count == 0)
                 {
@@ -1355,23 +1387,165 @@
 
                 try
                 {
-                    List<Salad> loadedSalads = Chef.LoadRecipesFromFile(fileName);
-                    if (loadedSalads.Count > 0)
+                    if (!File.Exists(fileName))
                     {
-                        salads.AddRange(loadedSalads);
-                        Console.WriteLine($"Загружено {loadedSalads.Count} салатов из файла '{fileName}'");
+                        Console.WriteLine($"Файл '{fileName}' не найден.");
+                        Logger.LogWarning("Попытка загрузки несуществующего файла", $"Файл: {fileName}");
+                        WaitForContinue();
+                        return;
                     }
-                    else
+
+                    Salad loadedSalad = FileManager.LoadSaladFromFile(fileName);
+                    if (loadedSalad != null)
                     {
-                        Console.WriteLine("В файле не найдено салатов.");
+                        salads.Add(loadedSalad);
+                        Console.WriteLine($"Салат '{loadedSalad.Name}' успешно загружен из файла '{fileName}'");
+                        Logger.LogFileLoaded(fileName, 1);
                     }
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Ошибка при загрузке: {ex.Message}");
+                    Logger.LogError("Ошибка при загрузке салата из файла", ex.Message);
                 }
 
                 WaitForContinue();
+            }
+
+            private void SearchVegetablesByCalorieRange()
+            {
+                Console.Clear();
+                Console.WriteLine("Поиск овощей по диапазону калорий");
+                Console.WriteLine("----------------------------------------------");
+
+                if (salads.Count == 0)
+                {
+                    Console.WriteLine("Нет салатов для поиска.");
+                    WaitForContinue();
+                    return;
+                }
+
+                Console.WriteLine("\nВыберите салат для поиска овощей:");
+                ShowSaladList();
+                Console.Write("Ваш выбор (0 - отмена): ");
+
+                if (!int.TryParse(Console.ReadLine(), out int saladIndex) || saladIndex < 1 || saladIndex > salads.Count)
+                {
+                    if (saladIndex != 0) Console.WriteLine("Неверный номер салата.");
+                    WaitForContinue();
+                    return;
+                }
+
+                Salad selectedSalad = salads[saladIndex - 1];
+
+                List<Vegetable> vegetables = selectedSalad.GetVegetables();
+
+                if (vegetables.Count == 0)
+                {
+                    Console.WriteLine($"\nВ салате '{selectedSalad.Name}' нет овощей.");
+                    WaitForContinue();
+                    return;
+                }
+
+                Console.Write("\nВведите минимальную калорийность (ккал/100г): ");
+                if (!double.TryParse(Console.ReadLine(), out double minCalories))
+                {
+                    Console.WriteLine("Некорректное значение.");
+                    WaitForContinue();
+                    return;
+                }
+
+                Console.Write("Введите максимальную калорийность (ккал/100г): ");
+                if (!double.TryParse(Console.ReadLine(), out double maxCalories))
+                {
+                    Console.WriteLine("Некорректное значение.");
+                    WaitForContinue();
+                    return;
+                }
+
+                if (minCalories > maxCalories)
+                {
+                    Console.WriteLine("Минимальное значение не может быть больше максимального.");
+                    WaitForContinue();
+                    return;
+                }
+
+                Console.WriteLine($"\nПоиск овощей в салате '{selectedSalad.Name}'");
+                Console.WriteLine($"в диапазоне калорий: {minCalories} - {maxCalories} ккал/100г");
+                Console.WriteLine("-----------------------------");
+
+                List<Vegetable> foundVegetables = new List<Vegetable>();
+
+                foreach (Vegetable vegetable in vegetables)
+                {
+                    if (vegetable is ISearchableIngredient searchableVegetable)
+                    {
+                        if (searchableVegetable.IsInCalorieRange(minCalories, maxCalories))
+                        {
+                            foundVegetables.Add(vegetable);
+                        }
+                    }
+                }
+
+                if (foundVegetables.Count > 0)
+                {
+                    Console.WriteLine($"\nНайдено овощей: {foundVegetables.Count}");
+                    Console.WriteLine("----------------------------------------------");
+
+                    for (int i = 0; i < foundVegetables.Count; i++)
+                    {
+                        Vegetable veg = foundVegetables[i];
+                        Console.WriteLine($"{i + 1}. {veg.Name}");
+                        Console.WriteLine($"   Тип: {veg.VegetableType}");
+                        Console.WriteLine($"   Цвет: {veg.Color}");
+                        Console.WriteLine($"   Калорийность: {veg.Calories} ккал/100г");
+                        Console.WriteLine($"   Клетчатка: {veg.FiberContent:F1}г/100г");
+                        Console.WriteLine($"   Вес в салате: {veg.Weight}г");
+                        Console.WriteLine($"   Стоимость: {veg.CalculateTotalPrice():F1} руб.");
+                        Console.WriteLine();
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("\nОвощей в указанном диапазоне калорий не найдено.");
+                }
+                if (vegetables.Count > 0)
+                {
+                    Vegetable minCalVeg = vegetables[0];
+                    Vegetable maxCalVeg = vegetables[0];
+
+                    foreach (Vegetable veg in vegetables)
+                    {
+                        if (veg.Calories < minCalVeg.Calories)
+                            minCalVeg = veg;
+                        if (veg.Calories > maxCalVeg.Calories)
+                            maxCalVeg = veg;
+                    }
+
+                    Console.WriteLine($"Овощ с минимальной калорийностью: {minCalVeg.Name} ({minCalVeg.Calories} ккал)");
+                    Console.WriteLine($"Овощ с максимальной калорийностью: {maxCalVeg.Name} ({maxCalVeg.Calories} ккал)");
+                }
+
+                Logger.LogInfo("Поиск овощей по диапазону калорий",
+                    $"Салат: {selectedSalad.Name}, Диапазон: {minCalories}-{maxCalories}, Найдено: {foundVegetables.Count}");
+
+                WaitForContinue();
+            }
+
+            private void LogoutAndReturnToAuth()
+            {
+                Logger.Logout();
+                Console.WriteLine("Вы вышли из системы.");
+                WaitForContinue();
+                AuthenticateUser();
+            }
+
+            private void ExitProgram()
+            {
+                Logger.LogInfo("Выход из программы",
+                    $"Пользователь: {Logger.CurrentUserName}, Салатов в системе: {salads.Count}");
+                Console.WriteLine("\nСпасибо за использование программы!");
+                Environment.Exit(0);
             }
 
             private void ShowSaladList()

@@ -39,7 +39,7 @@ public static class FileManager
         {
             if (!File.Exists(filePath))
             {
-                throw new FileNotFoundException($"XML файл не найден: {filePath}");
+                throw new FileNotFoundException($"XML файл не найден: {filePath}"); 
             }
 
             if (!filePath.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
